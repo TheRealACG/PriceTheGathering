@@ -17,6 +17,9 @@ CARD_NAME_COLUMN = 2;
 CARD_EXPANSION_COLUMN = 3;
 CARD_PRICE_COLUMN = 5;
 
+# path of excel photo
+loc = (r"C:\Users\Andrew\Documents\MTG card collection.xlsx")
+
 def cardNameCheck(name):
     name = name.replace(" ", "+")
     name = name.replace(",", "")
@@ -31,9 +34,8 @@ def goldfishSearch(url):
     return paperPrice.text
 #end of goldfishSearch
 
-# path of excel photo
-loc = (r"C:\Users\Andrew\Documents\MTG card collection.xlsx")
 
+#start of code
 wb = openpyxl.load_workbook(loc)
 sheet = wb['Sheet1']
 print(sheet.max_row)
@@ -54,3 +56,8 @@ for record in range(sheet.max_row - 1):
     print(cardValue)
 
     #insert value into excel
+    sheet.cell(row=(record+2),column=CARD_PRICE_COLUMN).value = cardValue
+
+#excel must be closed to run!!!
+wb.save(loc)
+print("We done!")

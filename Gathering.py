@@ -7,51 +7,50 @@ Price The Gathering
 
 import os
 import csv
-import xlrd
-import xlwt
+import openpyxl
 
 from bs4 import BeautifulSoup
 import requests
 
 #global variables, rows and columns 0 indexed
-CARD_NAME_COLUMN = 1;
-CARD_EXPANSION_COLUMN = 2;
-CARD_PRICE_COLUMN = 4;
+CARD_NAME_COLUMN = 2;
+CARD_EXPANSION_COLUMN = 3;
+CARD_PRICE_COLUMN = 5;
 
 def cardNameCheck(name):
     name = name.replace(" ", "+")
     name = name.replace(",", "")
     return name
 #end of cardNameCheck
+
+def goldfishSearch(url):
+    source = requests.get(url).text
+    soup = BeautifulSoup(source, 'lxml')
+    prices = soup.find("div", {"class": "price-box paper"})
+    paperPrice = prices.find("div", {"class": "price-box-price"})
+    return paperPrice.text
+#end of goldfishSearch
+
 # path of excel photo
 loc = (r"C:\Users\Andrew\Documents\MTG card collection.xlsx")
 
-wb = xlrd.open_workbook(loc)
-sheet = wb.sheet_by_index(0)
-print(sheet.nrows)
+wb = openpyxl.load_workbook(loc)
+sheet = wb['Sheet1']
+print(sheet.max_row)
 
-print(sheet.cell_value(5,1))
-
-for row in range(sheet.nrows - 1):
-    cardName = sheet.cell_value(row + 1,CARD_NAME_COLUMN)
-    cardName = cardNameCheck(cardName)
-    if cardName == "":
-        continue
-    expansion = sheet.cell_value(row + 1,CARD_EXPANSION_COLUMN)
+for record in range(sheet.max_row - 1):
+    cardName = sheet.cell(row=(record+2),column=CARD_NAME_COLUMN).value
     print(cardName)
-    print(expansion)
+
+    if cardName == None:
+        continue
+    cardName = cardNameCheck(cardName)
+    expansion = sheet.cell(row=(record+2),column=CARD_EXPANSION_COLUMN).value
+    expansion = cardNameCheck(expansion)
+    #print(cardName)
+    #print(expansion)
     startingURL = 'https://www.mtggoldfish.com/price/' + expansion + '/' + cardName + '#paper'
+    cardValue = goldfishSearch(startingURL)
+    print(cardValue)
 
-#expansion = "Theros"
-#cardName = "Purphoros, God of the Forge"
-#cardName = cardNameCheck(cardName)
-
-source = requests.get(startingURL).text
-soup = BeautifulSoup(source, 'lxml')
-prices = soup.find("div", {"class" : "price-box paper"})
-paperPrice = prices.find("div", {"class" : "price-box-price"})
-print(paperPrice)
-"""
-for each_price in frames:
-    print(each_price)
-"""
+    #insert value into excel
